@@ -10,15 +10,17 @@ const IndexPage = () => {
       <div>
         <div align="center">
         <br/>
-          <p style={{color: "cornflowerblue", fontSize: 50, fontWeight: 'bold'}}>
-            Gatsby Markdown Starter
+          <p style={{color: "pink", fontSize: 50, fontWeight: 'bold'}}>
+            Visual Computing  2020
           </p>
-          <h2>Boilerplate for markdown-based website</h2>
+          <h2>Juan Camilo Cárdenas Gómez</h2>
+          <h2>Iván Andrés Lemus Moreno</h2>
+          <h2>Michael Guerrero</h2>
           <br/>
-          <Link to="/docs/get-started/introduction">
-            <Button type="primary" size="large" icon="right-circle" style={{marginRight: 10}}>Get Started</Button>
+          <Link to="/blog">
+            <Button type="primary" size="large" icon="file" style={{marginRight: 10, background: "pink", border: "pink"}}>Blog</Button>
           </Link>
-          <Button type="primary" size="large" icon="github" href="https://github.com/cvluca/gatsby-starter-markdown">Github</Button>
+          <Button type="primary" size="large" icon="github" href="https://github.com/vizuali/">Github</Button>
         </div>
       </div>
     </Layout>
