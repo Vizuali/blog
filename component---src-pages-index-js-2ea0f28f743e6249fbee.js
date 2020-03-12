@@ -1,0 +1,2 @@
+(window.webpackJsonp=window.webpackJsonp||[]).push([[5],{462:function(e,n,t){"use strict";t.r(n);var a=t(1),l=t.n(a),r=t(460);t(272),t(54);n.default=function(){return l.a.createElement(r.a,null,l.a.createElement("div",null,l.a.createElement("div",{align:"center"},l.a.createElement("br",null),l.a.createElement("p",{style:{color:"cornflowerblue",fontSize:50,fontWeight:"bold"}},"Computación Visual 2020 (Spring)"),l.a.createElement("h2",null,"Juan Camilo Cárdenas Gómez"))))}}}]);
+//# sourceMappingURL=component---src-pages-index-js-2ea0f28f743e6249fbee.js.map
