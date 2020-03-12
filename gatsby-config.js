@@ -1,6 +1,7 @@
 module.exports = {
+  pathPrefix: "/index",
   siteMetadata: {
-    title: 'Gatsby Markdown Starter',
+    title: 'Vizuali',
   },
   plugins: [
     'gatsby-plugin-react-helmet',

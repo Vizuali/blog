@@ -1,8 +1,8 @@
 {
-  "name": "gatsby-starter-markdown",
-  "description": "Gatsby markdown starter",
+  "name": "Vizuali",
+  "description": "Group page",
   "version": "1.0.0",
-  "author": "Luca(Wei) Chen <wei@cvluca.com>",
+  "author": "Vizuali Universidad Nacional",
   "dependencies": {
     "antd": "^3.23.2",
     "eslint-plugin-flowtype": "^2.50.3",
@@ -48,6 +48,6 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/cvluca/gatsby-starter-markdown"
+    "url": "https://github.com/Vizuali/index"
   }
 }
