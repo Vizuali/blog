@@ -1,30 +1,72 @@
-import React from 'react'
-import Layout from '../components/Layout'
-import Button from 'antd/lib/button'
-import 'antd/lib/button/style/css'
-import { Link } from "gatsby"
+import React from "react"
+import { Link, graphql } from "gatsby"
 
-const IndexPage = () => {
+import Bio from "../components/bio"
+import Layout from "../components/layout"
+import SEO from "../components/seo"
+import { rhythm } from "../utils/typography"
+
+const BlogIndex = ({ data, location }) => {
+  const siteTitle = data.site.siteMetadata.title
+  const posts = data.allMdx.edges
+
   return (
-    <Layout>
-      <div>
-        <div align="center">
-        <br/>
-          <p style={{color: "pink", fontSize: 50, fontWeight: 'bold'}}>
-            Visual Computing  2020
-          </p>
-          <h2>Juan Camilo Cárdenas Gómez</h2>
-          <h2>Iván Andrés Lemus Moreno</h2>
-          <h2>Michael Guerrero</h2>
-          <br/>
-          <Link to="/blog">
-            <Button type="primary" size="large" icon="file" style={{marginRight: 10, background: "pink", border: "pink"}}>Blog</Button>
-          </Link>
-          <Button type="primary" size="large" icon="github" href="https://github.com/vizuali/">Github</Button>
-        </div>
-      </div>
+    <Layout location={location} title={siteTitle}>
+      <SEO title="All posts" />
+      <Bio />
+      {posts.map(({ node }) => {
+        const title = node.frontmatter.title || node.fields.slug
+        return (
+          <article key={node.fields.slug}>
+            <header>
+              <h3
+                style={{
+                  marginBottom: rhythm(1 / 4),
+                }}
+              >
+                <Link style={{ boxShadow: `none` }} to={node.fields.slug}>
+                  {title}
+                </Link>
+              </h3>
+              <small>{node.frontmatter.date}</small>
+            </header>
+            <section>
+              <p
+                dangerouslySetInnerHTML={{
+                  __html: node.frontmatter.description || node.excerpt,
+                }}
+              />
+            </section>
+          </article>
+        )
+      })}
     </Layout>
   )
 }
 
-export default IndexPage
+export default BlogIndex
+
+export const pageQuery = graphql`
+  query {
+    site {
+      siteMetadata {
+        title
+      }
+    }
+    allMdx(sort: { fields: [frontmatter___date], order: DESC }) {
+      edges {
+        node {
+          excerpt
+          fields {
+            slug
+          }
+          frontmatter {
+            date(formatString: "MMMM DD, YYYY")
+            title
+            description
+          }
+        }
+      }
+    }
+  }
+`

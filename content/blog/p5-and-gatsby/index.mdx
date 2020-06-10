@@ -1,0 +1,26 @@
+---
+title: "Ascii: early approach to image"
+date: "2020-03-13T14:23:00.0000"
+---
+
+*In this post we'll talk about Ascii and how it's been proved useful for primitive image display.*
+
+import Sketch from '../../../src/sketches/sketch'
+
+## This is the first post with p5.js
+
+Below you have an sketch made with p5.js.
+The basic idea around it is very simple. 
+You have an image/capture and iterate over all of its pixels.
+For each pixel, you calculate luminance or density of light. 
+And then map it to an array of (already) ordered ascii characters by density.
+
+**(You'll have to enable the camera for the sketch to work)*
+
+<Sketch></Sketch>
+
+## References
+
+* [The sketch running in this entry](http://www.mathiasbernhard.ch/ASCIImage/sketch.js)
+* [Example from Ben Fry](https://github.com/processing/processing-video/blob/master/examples/Capture/AsciiVideo/AsciiVideo.pde)
+* [Example from Processing Forum](https://forum.processing.org/two/discussion/6830/interpret-image-as-ascii-text)
