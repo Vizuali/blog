@@ -30,7 +30,7 @@ module.exports = {
     {
       resolve: `gatsby-plugin-mdx`,
       options: {
-        extensions: [".mdx",".md"],
+        extensions: [".mdx", ".md"],
         plugins: [
           {
             resolve: `gatsby-remark-images`,
@@ -45,14 +45,14 @@ module.exports = {
             },
           },
           {
-            resolve:`gatsby-remark-prismjs`,
+            resolve: `gatsby-remark-prismjs`,
           },
           {
             resolve: `gatsby-remark-copy-linked-files`,
           },
           {
             resolve: `gatsby-remark-smartypants`,
-          }
+          },
         ],
       },
     },
@@ -64,7 +64,6 @@ module.exports = {
         //trackingId: `ADD YOUR TRACKING ID HERE`,
       },
     },
-    `gatsby-plugin-feed`,
     {
       resolve: `gatsby-plugin-manifest`,
       options: {
