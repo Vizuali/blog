@@ -1,22 +1,24 @@
 ---
-title: "Image Processing: Convolution"
-date: "2020-03-20T14:23:00.0000"
+title: "Image Processing: Convolution (Software)"
+date: "2020-06-16T14:23:00.0000"
 description: "Image processing"
 ---
 
-_In this post we'll talk about Ascii and how it's been proved useful for primitive image display._
+_In this post we'll talk about convolution matrix implementation and gray scale._
 
 import ImageSketch from "../../../src/sketches/image" 
 
-## This is the first post with p5.js
+## Convolution matrix and Gray Scale
 
-Below you have an sketch made with p5.js.
-The basic idea around it is very simple.
-You have an image/capture and iterate over all of its pixels.
-For each pixel, you calculate luminance or density of light.
-And then map it to an array of (already) ordered ascii characters by density.
+This is a convolution matrix implementation, don't know how to use it? Let's talk about it.
 
-\*_(You'll have to enable the camera for the sketch to work)_
+- __Blur:__ Press 'b'
+- __Edge:__ Press 'e'
+- __Sharp:__ Press 's'
+- __Gray Scale:__ Press 'g'
+- __Identity:__ Press 'i' (This is useless but maybe someone want to see the same image twice)
+
+_Note: Please be patient, without hardware this could be a little bit slow :D_
 
 <div>
   {typeof window !== 'undefined' && <ImageSketch/>}
@@ -24,6 +26,6 @@ And then map it to an array of (already) ordered ascii characters by density.
 
 ## References
 
-- [The sketch running in this entry](http://www.mathiasbernhard.ch/ASCIImage/sketch.js)
+- [The sketch running in this entry](https://idmnyu.github.io/p5.js-image/Filters/index.html#bw)
 - [Example from Ben Fry](https://github.com/processing/processing-video/blob/master/examples/Capture/AsciiVideo/AsciiVideo.pde)
 - [Example from Processing Forum](https://forum.processing.org/two/discussion/6830/interpret-image-as-ascii-text)

@@ -20,17 +20,7 @@ class ImageSketch extends Component {
       [0, 1, 0],
       [0, 0, 0],
     ],
-    edge1: [
-      [1, 0, -1],
-      [0, 0, 0],
-      [-1, 0, 1],
-    ],
-    edge2: [
-      [0, 1, 0],
-      [1, -4, 1],
-      [0, 1, 0],
-    ],
-    edge3: [
+    edge: [
       [-1, -1, -1],
       [-1, 8, -1],
       [-1, -1, -1],
@@ -40,26 +30,16 @@ class ImageSketch extends Component {
       [-1, 5, -1],
       [0, -1, 0],
     ],
-    boxblur: [
-      [1 / 9, 1 / 9, 1 / 9],
-      [1 / 9, 1 / 9, 1 / 9],
-      [1 / 9, 1 / 9, 1 / 9],
-    ],
-    gaussianblur3x3: [
-      [1 / 16, 1 / 8, 1 / 16],
-      [1 / 8, 1 / 4, 1 / 8],
-      [1 / 16, 1 / 8, 1 / 16],
-    ],
     gaussianblur5x5: [
       [1 / 256, 4 / 256, 6 / 256, 4 / 256, 1 / 256],
-      [4 / 256, 16 / 256, 24 / 256, 16 / 256, 4 /256],
-      [6 / 256, 24 / 256, 36 / 256, 24 / 256, 6 /256],
-      [4 / 256, 16 / 256, 24 / 256, 16 / 256, 4 /256],
+      [4 / 256, 16 / 256, 24 / 256, 16 / 256, 4 / 256],
+      [6 / 256, 24 / 256, 36 / 256, 24 / 256, 6 / 256],
+      [4 / 256, 16 / 256, 24 / 256, 16 / 256, 4 / 256],
       [1 / 256, 4 / 256, 6 / 256, 4 / 256, 1 / 256],
     ],
   }
 
-  kernel = this.masks.gaussianblur5x5
+  kernel = this.masks.edge
   dest = null
 
   preload = p5 => {
@@ -122,12 +102,69 @@ class ImageSketch extends Component {
     return accumulator
   }
 
+  grayScale = (p) => {
+    this.dest.loadPixels()
+    this.img.loadPixels()
+    for (var y = 0; y < this.dest.height; y++) {
+      for (var x = 0; x < this.dest.width; x++) {
+        var index = (x + y * this.dest.width) * 4;
+        var r = this.img.pixels[index + 0];
+        var g = this.img.pixels[index + 1];
+        var b = this.img.pixels[index + 2];
+        var a = this.img.pixels[index + 3];
+
+        var bw = (r + g + b) / 3;
+
+        this.dest.pixels[index + 0] = bw;
+        this.dest.pixels[index + 1] = bw;
+        this.dest.pixels[index + 2] = bw;
+      }
+    }
+
+    this.dest.updatePixels()
+  }
+
   draw = p5 => {
     p5.image(this.img, 0, 0)
-    p5.image(this.dest, this.img.width, 0)
+    p5.image(this.dest, this.img.width + 1, 0)
   }
+
+  keyTyped = p5 => {
+    let key = p5.key
+
+    // identity
+    if (key === 'i') {
+      this.kernel = this.masks.identity
+      this.apply(p5)
+    }
+
+    // blur
+    if (key === 'b') {
+      this.kernel = this.masks.gaussianblur5x5
+      this.apply(p5)
+    }
+
+    // edge
+    if (key === 'e') {
+      this.kernel = this.masks.edge
+      this.apply(p5)
+    }
+
+    //sharp
+    if (key === 's') {
+      this.kernel = this.masks.sharp
+      this.apply(p5)
+    }
+
+    if (key === 'g') {
+      this.grayScale(p5)
+    }
+
+
+  }
+
   render() {
-    return <Sketch preload={this.preload} setup={this.setup} draw={this.draw} />
+    return <Sketch preload={this.preload} setup={this.setup} draw={this.draw} keyTyped={this.keyTyped} />
   }
 }
 
