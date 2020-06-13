@@ -1,39 +1,50 @@
 const React = require("react")
-const { Component } = React
-const Sketch = typeof window !== `undefined` ? require("react-p5") : null
+const Sketch = typeof window !== `undefined` ? require("react-p5") : null;
+const { useStaticQuery, graphql } = require("gatsby")
 
+const ShaderSketch = () => {
+  const w = 100
+  const h = 100
+  const data = useStaticQuery(graphql`
+  {
+    allFile(filter: {sourceInstanceName: {eq: "shaders"}, name: {eq: "color"}}, sort: {fields: extension, order: DESC}) {
+      nodes {
+        publicURL
+      }
+    }
+  }  
+  `)
 
-class ShaderSketch extends Component {
-  w = 100
-  h = 100
+  let img;
+  let shader; 
+  let canvas;
+  let graphics;
 
-  preload = p => {
-    this.img = p.loadImage(
+  const preload = p => {
+    img = p.loadImage(
       "https://4.bp.blogspot.com/-mLOwpEsNL4Y/UCu0wcVsPBI/AAAAAAAAA6s/7ECKTpxXr3o/s1600/lena.bmp"
     )
-    this.shader = p.loadShader('https://aferriss.github.io/p5jsShaderExamples/2_texture-coordinates/2-1_basic/texcoord.vert','https://aferriss.github.io/p5jsShaderExamples/2_texture-coordinates/2-1_basic/texcoord.frag');
+    // shader = p.loadShader('https://aferriss.github.io/p5jsShaderExamples/2_texture-coordinates/2-1_basic/texcoord.vert','https://aferriss.github.io/p5jsShaderExamples/2_texture-coordinates/2-1_basic/texcoord.frag');
+    shader = p.loadShader(data.allFile.nodes[0].publicURL,data.allFile.nodes[1].publicURL);
   }
 
-  setup = (p, canvasParentRef) => {
-    this.cvn = p.createCanvas(this.w*2,this.h).parent(canvasParentRef); 
+  const setup = (p, canvasParentRef) => {
+    canvas = p.createCanvas(w*2,h).parent(canvasParentRef); 
     // p.pixelDensity(1);
 
-    this.graphics = p.createGraphics(this.w,this.h,p.WEBGL)
-    // this.graphics.imageMode(p.CENTER);
+    graphics = p.createGraphics(w,h,p.WEBGL)
+    // graphics.imageMode(p.CENTER);
   }
 
-  draw = p => {
-    this.graphics.shader(this.shader)
-    this.graphics.rect(0,0,this.w,this.h)
+  const draw = p => {
+    graphics.shader(shader)
+    graphics.rect(0,0,w,h)
 
-
-    p.image(this.graphics,0,0)
-    p.image(this.img,this.w,0,this.w,this.h)
+    p.image(graphics,0,0)
+    p.image(img,w,0,w,h)
   }
 
-  render() {
-    return <Sketch preload={this.preload} setup={this.setup} draw={this.draw} />
-  }
+  return <Sketch preload={preload} setup={setup} draw={draw} />
 }
 
 export default ShaderSketch;
