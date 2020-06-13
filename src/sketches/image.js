@@ -123,6 +123,49 @@ class ImageSketch extends Component {
 
     this.dest.updatePixels()
   }
+  grayScaleLuma601 = (p) => {
+    this.dest.loadPixels()
+    this.img.loadPixels()
+    for (var y = 0; y < this.dest.height; y++) {
+      for (var x = 0; x < this.dest.width; x++) {
+        var index = (x + y * this.dest.width) * 4;
+        var r = this.img.pixels[index + 0];
+        var g = this.img.pixels[index + 1];
+        var b = this.img.pixels[index + 2];
+        var a = this.img.pixels[index + 3];
+
+        var bw = r *.299 + g *.587 + b *.0114;
+
+        this.dest.pixels[index + 0] = bw;
+        this.dest.pixels[index + 1] = bw;
+        this.dest.pixels[index + 2] = bw;
+      }
+    }
+
+    this.dest.updatePixels()
+  }
+
+  grayScaleLuma709 = (p) => {
+    this.dest.loadPixels()
+    this.img.loadPixels()
+    for (var y = 0; y < this.dest.height; y++) {
+      for (var x = 0; x < this.dest.width; x++) {
+        var index = (x + y * this.dest.width) * 4;
+        var r = this.img.pixels[index + 0];
+        var g = this.img.pixels[index + 1];
+        var b = this.img.pixels[index + 2];
+        var a = this.img.pixels[index + 3];
+
+        var bw = r *.2126 + g *.7152 + b *.0722;
+
+        this.dest.pixels[index + 0] = bw;
+        this.dest.pixels[index + 1] = bw;
+        this.dest.pixels[index + 2] = bw;
+      }
+    }
+
+    this.dest.updatePixels()
+  }
 
   draw = p5 => {
     p5.image(this.img, 0, 0)
@@ -159,6 +202,13 @@ class ImageSketch extends Component {
     if (key === 'g') {
       this.grayScale(p5)
     }
+    if (key === 'h') {
+      this.grayScaleLuma601(p5)
+    }
+    if (key === 'j') {
+      this.grayScaleLuma709(p5)
+    }
+
 
 
   }
