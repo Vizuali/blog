@@ -14,6 +14,7 @@ class ImageSketch extends Component {
   pg = null
   img = null
 
+
   masks = {
     identity: [
       [0, 0, 0],
@@ -21,9 +22,19 @@ class ImageSketch extends Component {
       [0, 0, 0],
     ],
     edge: [
+      [-1, 0, 1],
+      [0, 0, 0],
+      [1, 0, -1],
+    ],
+    edge1: [
       [-1, -1, -1],
       [-1, 8, -1],
       [-1, -1, -1],
+    ],
+    edge2: [
+      [0, 1, 0],
+      [1, -4, 1],
+      [0, 1, 0],
     ],
     sharp: [
       [0, -1, 0],
@@ -55,6 +66,7 @@ class ImageSketch extends Component {
     p5.pixelDensity(1)
     this.dest = p5.createImage(this.img.width, this.img.height)
     this.apply(p5)
+
   }
 
   apply = p => {
@@ -105,6 +117,11 @@ class ImageSketch extends Component {
   grayScale = (p) => {
     this.dest.loadPixels()
     this.img.loadPixels()
+    var maxRange = 256
+    var histogram = new Array(maxRange);
+    /*for (var i = 0; i <= maxRange; i++) {
+      histogram[i] = 0
+    }*/
     for (var y = 0; y < this.dest.height; y++) {
       for (var x = 0; x < this.dest.width; x++) {
         var index = (x + y * this.dest.width) * 4;
@@ -112,7 +129,9 @@ class ImageSketch extends Component {
         var g = this.img.pixels[index + 1];
         var b = this.img.pixels[index + 2];
         var a = this.img.pixels[index + 3];
-
+        /*var bright = p.brightness(p.get(y,x))
+        
+        histogram[bright]++;*/
         var bw = (r + g + b) / 3;
 
         this.dest.pixels[index + 0] = bw;
@@ -120,6 +139,18 @@ class ImageSketch extends Component {
         this.dest.pixels[index + 2] = bw;
       }
     }
+    /*var histMax = p.max(histogram);
+    p.stroke(255);
+
+    for (var i = 0; i < this.img.width; i += 2) {
+      // Map i (from 0..img.width) to a location in the histogram (0..255)
+      var which = p.map(i, 0, this.img.width, 0, 255);
+      // Convert the histogram value to a location between 
+      // the bottom and the top of the picture
+      var y = p.map(histogram[which], 0, histMax, this.img.height, 0);
+      p.line(i, this.img.height, i, y);
+    }*/
+
 
     this.dest.updatePixels()
   }
@@ -166,7 +197,7 @@ class ImageSketch extends Component {
 
     this.dest.updatePixels()
   }
-
+  histogram
   draw = p5 => {
     p5.image(this.img, 0, 0)
     p5.image(this.dest, this.img.width + 1, 0)
@@ -190,6 +221,14 @@ class ImageSketch extends Component {
     // edge
     if (key === 'e') {
       this.kernel = this.masks.edge
+      this.apply(p5)
+    }
+    if (key === 'r') {
+      this.kernel = this.masks.edge1
+      this.apply(p5)
+    }
+    if (key === 't') {
+      this.kernel = this.masks.edge2
       this.apply(p5)
     }
 
