@@ -48,6 +48,11 @@ class ImageSketch extends Component {
       [4 / 256, 16 / 256, 24 / 256, 16 / 256, 4 / 256],
       [1 / 256, 4 / 256, 6 / 256, 4 / 256, 1 / 256],
     ],
+    boxblur: [
+      [1 / 9, 1 / 9, 1 / 9],
+      [1 / 9, 1 / 9, 1 / 9],
+      [1 / 9, 1 / 9, 1 / 9],
+    ]
   }
 
   kernel = this.masks.edge
@@ -113,15 +118,48 @@ class ImageSketch extends Component {
     }
     return accumulator
   }
+  histogram = (p) => {
+    this.dest.loadPixels()
+    this.img.loadPixels()
+    var width = this.img.width;
+    var height = this.img.height;
+
+    /*p.h1 = p.createElement("h1", "Levels Histogram");
+    p.h1.style("z-index", 50);
+    p.h1.style("x-index", 150);
+    p.h1.style("x-index", width / 2);*/
+
+   p.createCanvas(width*2, height*3);
+   p.background(255);
+    var maxRange = 256
+    var histogram = [0];
+    for (var i = 0; i <= maxRange; i++) {
+      histogram[i] = 0;
+    }
+    for (var y = 0; y < this.dest.height; y++) {
+      for (var x = 0; x < this.dest.width; x++) {
+        var index = (x + y * this.dest.width) * 4;
+        histogram[this.img.pixels[index + 4]]++;
+      }}
+      var maxPixels = 0;
+      for (i = 0; i < 255; i++) {
+        if (histogram[i] > maxPixels) {
+          maxPixels = histogram[i];
+        }
+      }
+      for (i = 0; i < 255; i++) {
+        var h = p.map(histogram[i], 0, maxPixels, 0,  this.dest.height-10)
+        console.log(h)
+        p.fill(i, i, i);
+        p.rect(0 + (i * (this.dest.width / 255)), this.dest.height, this.dest.width / 255, h);
+      }
+
+  }
 
   grayScale = (p) => {
     this.dest.loadPixels()
     this.img.loadPixels()
-    var maxRange = 256
-    var histogram = new Array(maxRange);
-    /*for (var i = 0; i <= maxRange; i++) {
-      histogram[i] = 0
-    }*/
+
     for (var y = 0; y < this.dest.height; y++) {
       for (var x = 0; x < this.dest.width; x++) {
         var index = (x + y * this.dest.width) * 4;
@@ -129,9 +167,8 @@ class ImageSketch extends Component {
         var g = this.img.pixels[index + 1];
         var b = this.img.pixels[index + 2];
         var a = this.img.pixels[index + 3];
-        /*var bright = p.brightness(p.get(y,x))
-        
-        histogram[bright]++;*/
+        //var loc = this.img.pixels[index + 4];
+
         var bw = (r + g + b) / 3;
 
         this.dest.pixels[index + 0] = bw;
@@ -139,20 +176,10 @@ class ImageSketch extends Component {
         this.dest.pixels[index + 2] = bw;
       }
     }
-    /*var histMax = p.max(histogram);
-    p.stroke(255);
-
-    for (var i = 0; i < this.img.width; i += 2) {
-      // Map i (from 0..img.width) to a location in the histogram (0..255)
-      var which = p.map(i, 0, this.img.width, 0, 255);
-      // Convert the histogram value to a location between 
-      // the bottom and the top of the picture
-      var y = p.map(histogram[which], 0, histMax, this.img.height, 0);
-      p.line(i, this.img.height, i, y);
-    }*/
-
-
+    
     this.dest.updatePixels()
+    
+  
   }
   grayScaleLuma601 = (p) => {
     this.dest.loadPixels()
@@ -165,7 +192,7 @@ class ImageSketch extends Component {
         var b = this.img.pixels[index + 2];
         var a = this.img.pixels[index + 3];
 
-        var bw = r *.299 + g *.587 + b *.0114;
+        var bw = r * .299 + g * .587 + b * .0114;
 
         this.dest.pixels[index + 0] = bw;
         this.dest.pixels[index + 1] = bw;
@@ -187,7 +214,7 @@ class ImageSketch extends Component {
         var b = this.img.pixels[index + 2];
         var a = this.img.pixels[index + 3];
 
-        var bw = r *.2126 + g *.7152 + b *.0722;
+        var bw = r * .2126 + g * .7152 + b * .0722;
 
         this.dest.pixels[index + 0] = bw;
         this.dest.pixels[index + 1] = bw;
@@ -197,10 +224,11 @@ class ImageSketch extends Component {
 
     this.dest.updatePixels()
   }
-  histogram
+
   draw = p5 => {
     p5.image(this.img, 0, 0)
     p5.image(this.dest, this.img.width + 1, 0)
+    
   }
 
   keyTyped = p5 => {
@@ -215,6 +243,10 @@ class ImageSketch extends Component {
     // blur
     if (key === 'b') {
       this.kernel = this.masks.gaussianblur5x5
+      this.apply(p5)
+    }
+    if (key === 'v') {
+      this.kernel = this.masks.boxblur
       this.apply(p5)
     }
 
@@ -240,6 +272,7 @@ class ImageSketch extends Component {
 
     if (key === 'g') {
       this.grayScale(p5)
+      //this.histogram(p5)
     }
     if (key === 'h') {
       this.grayScaleLuma601(p5)
