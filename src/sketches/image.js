@@ -71,6 +71,7 @@ class ImageSketch extends Component {
     p5.pixelDensity(1)
     this.dest = p5.createImage(this.img.width, this.img.height)
     this.apply(p5)
+    this.histogram(p5)
 
   }
 
@@ -124,35 +125,34 @@ class ImageSketch extends Component {
     var width = this.img.width;
     var height = this.img.height;
 
-    /*p.h1 = p.createElement("h1", "Levels Histogram");
-    p.h1.style("z-index", 50);
-    p.h1.style("x-index", 150);
-    p.h1.style("x-index", width / 2);*/
-
-   p.createCanvas(width*2, height*3);
+   p.createCanvas(width*2, height*2);
    p.background(255);
     var maxRange = 256
     var histogram = [0];
+
     for (var i = 0; i <= maxRange; i++) {
       histogram[i] = 0;
     }
+
     for (var y = 0; y < this.dest.height; y++) {
       for (var x = 0; x < this.dest.width; x++) {
         var index = (x + y * this.dest.width) * 4;
         histogram[this.img.pixels[index + 4]]++;
-      }}
-      var maxPixels = 0;
-      for (i = 0; i < 255; i++) {
-        if (histogram[i] > maxPixels) {
-          maxPixels = histogram[i];
-        }
       }
-      for (i = 0; i < 255; i++) {
-        var h = p.map(histogram[i], 0, maxPixels, 0,  this.dest.height-10)
-        console.log(h)
+    }
+
+    var maxPixels = 0;
+    for (i = 0; i < 255; i++) {
+      if (histogram[i] > maxPixels) {
+        maxPixels = histogram[i];
+      }
+    }
+      
+    for (i = 0; i < 255; i++) {
+        var h = p.map(histogram[i], 0, maxPixels, 0, height - 200)
         p.fill(i, i, i);
-        p.rect(0 + (i * (this.dest.width / 255)), this.dest.height, this.dest.width / 255, h);
-      }
+        p.rect(0 + (i * (width / 255)), height+350, width / 255, -h);
+    }
 
   }
 
@@ -272,7 +272,7 @@ class ImageSketch extends Component {
 
     if (key === 'g') {
       this.grayScale(p5)
-      //this.histogram(p5)
+ 
     }
     if (key === 'h') {
       this.grayScaleLuma601(p5)
