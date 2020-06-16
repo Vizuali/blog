@@ -1,8 +1,14 @@
-import React from 'react'
-
+const React = require("react")
 const Sketch = typeof window !== `undefined` ? require("react-p5") : null
 
 const ImageSketch = () => {
+  let cnv = null
+  let options = ` .\`-_':,;^=+/"|)\\<>)iv%xclrs{*}I?!][1taeo7zjLunT#JCwfy325Fp6mqSghVd4EgXPGZbYkOA&8U$@KHDBWNMR0Q`
+  let gui = null
+  let capture = null
+  let pg = null
+  let img = null
+
   let masks = {
     identity: [
       [0, 0, 0],
@@ -29,20 +35,19 @@ const ImageSketch = () => {
   }
 
   let kernel = masks.edge
-  let img,dest
+  let dest = null
 
-  const preload = p => {
-    img = p.loadImage(
+  const preload = p5 => {
+    img = p5.loadImage(
       "https://4.bp.blogspot.com/-mLOwpEsNL4Y/UCu0wcVsPBI/AAAAAAAAA6s/7ECKTpxXr3o/s1600/lena.bmp"
     )
   }
 
-  const setup = (p, canvasParentRef) => {
-    p.createCanvas(img.width * 2, img.height, p.WEBGL).parent(canvasParentRef)
-    console.log(p.drawingContext)
-    p.pixelDensity(1)
-    dest = p.createImage(img.width, img.height)
-    apply(p)
+  const setup = (p5, canvasParentRef) => {
+    cnv = p5.createCanvas(img.width * 2, img.height).parent(canvasParentRef)
+    p5.pixelDensity(1)
+    dest = p5.createImage(img.width, img.height)
+    apply(p5)
   }
 
   const apply = p => {
@@ -88,7 +93,7 @@ const ImageSketch = () => {
         var r = img.pixels[index + 0]
         var g = img.pixels[index + 1]
         var b = img.pixels[index + 2]
-        // var a = img.pixels[index + 3]
+        var a = img.pixels[index + 3]
 
         var bw = (r + g + b) / 3
 
@@ -110,7 +115,7 @@ const ImageSketch = () => {
         var r = img.pixels[index + 0]
         var g = img.pixels[index + 1]
         var b = img.pixels[index + 2]
-        // var a = img.pixels[index + 3]
+        var a = img.pixels[index + 3]
 
         var bw = r * 0.299 + g * 0.587 + b * 0.0114
 
@@ -132,7 +137,7 @@ const ImageSketch = () => {
         var r = img.pixels[index + 0]
         var g = img.pixels[index + 1]
         var b = img.pixels[index + 2]
-        // var a = img.pixels[index + 3]
+        var a = img.pixels[index + 3]
 
         var bw = r * 0.2126 + g * 0.7152 + b * 0.0722
 
@@ -145,50 +150,52 @@ const ImageSketch = () => {
     dest.updatePixels()
   }
 
-  const draw = p => {
-    p.image(img, 0, 0)
-    p.image(dest, img.width + 1, 0)
+  const draw = p5 => {
+    p5.image(img, 0, 0)
+    p5.image(dest, img.width + 1, 0)
   }
 
-  const keyTyped = p => {
-    let key = p.key
+  const keyTyped = p5 => {
+    let key = p5.key
 
     // identity
     if (key === "i") {
       kernel = masks.identity
-      apply(p)
+      apply(p5)
     }
 
     // blur
     if (key === "b") {
       kernel = masks.gaussianblur5x5
-      apply(p)
+      apply(p5)
     }
 
     // edge
     if (key === "e") {
       kernel = masks.edge
-      apply(p)
+      apply(p5)
     }
 
     //sharp
     if (key === "s") {
       kernel = masks.sharp
-      apply(p)
+      apply(p5)
     }
 
     if (key === "g") {
-      grayScale(p)
+      grayScale(p5)
     }
     if (key === "h") {
-      grayScaleLuma601(p)
+      grayScaleLuma601(p5)
     }
     if (key === "j") {
-      grayScaleLuma709(p)
+      grayScaleLuma709(p5)
     }
   }
 
-  return <Sketch preload={preload} setup={setup} draw={draw} keyTyped={keyTyped} />
+  return (
+    <Sketch preload={preload} setup={setup} draw={draw} keyTyped={keyTyped} />
+  )
 }
 
 export default ImageSketch
