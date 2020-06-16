@@ -7,7 +7,7 @@ const ShaderSketch = (props) => {
   const data = useStaticQuery(graphql`
     {
       allFile(
-        filter: { sourceInstanceName: { eq: "shaders" }, name: { eq: "ascii2" } }
+        filter: { sourceInstanceName: { eq: "shaders" }, name: { eq: "ascii" } }
         sort: { fields: extension, order: DESC }
       ) {
         nodes {
