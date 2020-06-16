@@ -1,46 +1,40 @@
-import { useStaticQuery, graphql } from "gatsby"
-import React from 'react'
+import React from "react"
 
 const Sketch = typeof window !== `undefined` ? require("react-p5") : null
 
-const AsciiShaderSketch = (props) => {
-  const data = useStaticQuery(graphql`
-    {
-      allFile(
-        filter: { sourceInstanceName: { eq: "shaders" }, name: { eq: "ascii" } }
-        sort: { fields: extension, order: DESC }
-      ) {
-        nodes {
-          publicURL
-        }
-      }
-    }
-  `)
-
+const GraySketch = () => {
   const minW = 630
   let w = minW,
     h = 3 * w / 4
 
-  let shader
-  let graphics
-  let video,img,img2,img3
+  const rgbAvg = arr => arr.reduce((a,b) => a + b, 0) / arr.length
+  const rgbMax = arr => Math.max(...arr)
+  const rgbMid = arr => (Math.max(...arr)+Math.min(...arr))/2
+
+  const luma601 = arr => 0.2989 * arr[0] + 0.5870 * arr[1] + 0.1140 * arr[2]
+  const luma240 = arr => 0.212 * arr[0] + 0.701 * arr[1] + 0.087 * arr[2]
+  const luma709 = arr => 0.2126 * arr[0] + 0.7152 * arr[1] + 0.0722 * arr[2]
+  const luma2020 = arr => 0.2627 * arr[0] + 0.6780 * arr[1] + 0.0593 * arr[2]
+
+
+  let dest,video,img,img2,img3
   let images = []
   let imgIndex
-
-  let gray = false, monotone = false, frames = true, imageMode = props.imageMode
+  let grayFunction = arr => 0.2989 * arr[0] + 0.5870 * arr[1] + 0.1140 * arr[2]
+  let grayIndex = 0
+  let grays = []
+  let frames = true, imageMode = true
 
   const preload = p => {
-    shader = p.loadShader(
-      data.allFile.nodes[0].publicURL,
-      data.allFile.nodes[2].publicURL
-    )
-
     img = p.loadImage("https://upload.wikimedia.org/wikipedia/commons/0/02/Fire_breathing_2_Luc_Viatour.jpg")
     img2 = p.loadImage("https://4.bp.blogspot.com/-mLOwpEsNL4Y/UCu0wcVsPBI/AAAAAAAAA6s/7ECKTpxXr3o/s1600/lena.bmp")
     img3 = p.loadImage("https://images.unsplash.com/photo-1500462918059-b1a0cb512f1d?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=2134&q=80")
 
     images = [img,img2,img3]
     imgIndex = 0
+
+    grayFunction = luma601
+    grays = [rgbAvg,rgbMax,rgbMid,luma601,luma240,luma709,luma2020]
   }
 
   const setup = (p, canvasParentRef) => {
@@ -50,48 +44,39 @@ const AsciiShaderSketch = (props) => {
       h = 3 * (w/4)
     }
 
+    // Resize images
+    for(let im of images) im.resize(w,h)
+    
     // Init Canvas
     p.createCanvas(w, h*2).parent(canvasParentRef)
+
+    // Init Output image
+    dest = p.createImage(img.width,img.height)
 
     // Init Video
     video = p.createCapture(p.VIDEO)
     video.hide()
-    
+
     // Init graphics 
-    graphics = p.createGraphics(w, h, p.WEBGL)
+    // graphics = p.createGraphics(w, h)
+
   }
 
   const draw = p => {
-    // Shader setup
-    graphics.shader(shader)
+    // Set background to black
+    p.background(0)
 
-    // Uniforms setup
-    shader.setUniform("iResolution", [w, h]);
-    if (imageMode) shader.setUniform("iChannel0", img);
-    else shader.setUniform("iChannel0", video);
-    shader.setUniform("iMouse", gray);
-    shader.setUniform("monotone", monotone);
-    
     // Add img/video to graphics and canvas
     if (imageMode){
-      graphics.image(img, 0, 0)
+      // graphics.image(img,0,0)
       p.image(img,0,h,w,h)
     }else{
-      graphics.image(video, 0, 0)
+      // graphics.image(video,0,0)
       p.image(video,0,h,w,h)
     }
-    
-    if(gray || monotone) p.filter(p.GRAY);
 
-    // Flip video for proper visualization
-    graphics.translate(0,h)
-    p.scale(1.0,-1.0); 
-
-    // This is just a geometry needed to visualize the shader output
-    graphics.rect(0, 0, w, h)
-
-    // Show shader output on canvas
-    p.image(graphics, 0,-h)
+    if(imageMode) gray(p,img,grayFunction)
+    else gray(p,video,grayFunction)
 
     // Show frameRate/histogram
     if (!imageMode && frames) {
@@ -100,10 +85,33 @@ const AsciiShaderSketch = (props) => {
       p.stroke(0)
       p.fill("#22B455")
       p.textSize(w/10)
-      p.scale(1.0,-1.0); 
-      p.text(Math.round(p.frameRate()),10,w/10)
+      p.text(p.round(p.frameRate()),w/25,h/8)
       p.pop()
     } else histogram(p)
+
+    p.image(img,0,0,w,h)
+  }
+
+  const gray = (p,input,f) => {
+    input.loadPixels()
+    dest.loadPixels()
+    p.push()
+    // p.colorMode(p.RGB,1.0)
+    for (let y = 0; y < input.height; y += 5) {
+      for (let x = 0; x < input.width; x += 5) {
+        var loc = (x + y * input.width) * 4;
+
+        let r = input.pixels[loc+0]
+        let g = input.pixels[loc+1]
+        let b = input.pixels[loc+2]
+
+        let value = f([r,g,b])
+
+        dest.set(x, y, p.color(value));
+      }
+    }
+    p.pop()
+
   }
 
   const histogram = (p) => {
@@ -128,7 +136,6 @@ const AsciiShaderSketch = (props) => {
     var maxPixels = Math.max(...histogram)
     
     p.push()
-    p.scale(1.0,-1.0)
     p.noStroke()
     p.fill(255,255,255,180)
     p.rect(0,h,w,h)
@@ -145,19 +152,24 @@ const AsciiShaderSketch = (props) => {
     p.noLoop()
   }
 
-  // Toggle color from image
   const keyTyped = p => {
     let key = p.key
 
     if (key === "g") {
-      gray = !gray
-      monotone = false
-    }
-
-    if (key === "m") {
-      monotone = !monotone
-      gray = false
-    }
+      if(grayIndex >= 1) {
+        grayIndex--
+        grayFunction = grays[grayIndex]
+        p.redraw()
+      }
+    } 
+  
+    if (key === "G") {
+      if(grayIndex <= grays.length-2) {
+        grayIndex++
+        grayFunction = grays[grayIndex]
+        p.redraw()
+      }
+    } 
 
     if (key === "f") {
       frames = !frames
@@ -165,7 +177,9 @@ const AsciiShaderSketch = (props) => {
   }
 
   const keyPressed = p => {
-    if (p.keyCode === p.LEFT_ARROW) {
+    let key = p.keyCode
+
+    if (key === p.LEFT_ARROW) {
       if(imgIndex >= 1) {
         imgIndex--
         img = images[imgIndex]
@@ -173,7 +187,7 @@ const AsciiShaderSketch = (props) => {
       }
     } 
 
-    if (p.keyCode === p.RIGHT_ARROW) {
+    if (key === p.RIGHT_ARROW) {
       if(imgIndex <= images.length-2) {
         imgIndex++
         img = images[imgIndex]
@@ -181,7 +195,7 @@ const AsciiShaderSketch = (props) => {
       }
     } 
 
-    if (p.keyCode === p.BACKSPACE) {
+    if (key === p.BACKSPACE) {
       if(imageMode) {
         imageMode = false
         p.loop()
@@ -191,7 +205,7 @@ const AsciiShaderSketch = (props) => {
     } 
   }
 
-  return <Sketch preload={preload} setup={setup} draw={draw} keyTyped={keyTyped} keyPressed={keyPressed}/>
+  return <Sketch preload={preload} setup={setup} draw={draw} keyTyped={keyTyped} keyPressed={keyPressed} />
 }
 
-export default AsciiShaderSketch
+export default GraySketch

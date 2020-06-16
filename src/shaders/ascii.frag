@@ -1,3 +1,4 @@
+
 // This is a port of "Ascii Art " by movAX13h
 // https://www.shadertoy.com/view/lssGDj
 
@@ -31,7 +32,7 @@ float character(int n, vec2 p){
       // We trim the bitmap interpretation
       // And check if its less significan bit is 1
       // In that case, we return 1.0
-      n = n/int(exp2(float(a)));
+      n = n / int(exp2(float(a)));
       n = int(mod(float(n),2.0));
       if (n == 0) return 1.0;
     }	
@@ -48,7 +49,8 @@ void main(){
   // Calculate of luminance given rgb values
 	float gray = 0.3 * col.r + 0.59 * col.g + 0.11 * col.b;
 	
-  // More information about this bitmap representation on: http://www.thrill-project.com/archiv/coding/bitmap/
+  // More information about this bitmap representation on: 
+  // http://www.thrill-project.com/archiv/coding/bitmap/
 	int n =  4096;                // .
 	if (gray > 0.2) n = 65600;    // :
 	if (gray > 0.3) n = 332772;   // *

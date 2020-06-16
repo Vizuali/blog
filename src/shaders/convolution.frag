@@ -11,6 +11,14 @@ uniform sampler2D tex0;
 uniform vec2 stepSize;
 uniform float dist;
 
+// Set of control variables
+uniform bool isEdge1;
+uniform bool isEdge2;
+uniform bool isEdge3;
+uniform bool isSharp;
+uniform bool isBoxblur;
+
+
 // an array with 9 vec2's
 // each index in the array will be a step in a different direction around a pixel
 // upper left, upper middle, upper right
@@ -40,10 +48,34 @@ void main(){
 
   // here are a few examples, try uncommenting them to see how they affect the image
 
-  // emboss kernel
-  kernel[0] = -2.0; kernel[1] = -1.0; kernel[2] = 0.0;
-  kernel[3] = -1.0; kernel[4] = 1.0; kernel[5] = 1.0;
-  kernel[6] = 0.0; kernel[7] = 1.0; kernel[8] = 2.0;
+  if(isEdge1){
+    kernel[0] = -1.0; kernel[1] = 0.0; kernel[2] = 1.0;
+    kernel[3] = 0.0; kernel[4] = 0.0; kernel[5] = 0.0;
+    kernel[6] = 1.0; kernel[7] = 0.0; kernel[8] = -1.0;
+  }else if(isEdge2){
+    kernel[0] = -1.0; kernel[1] = -1.0; kernel[2] = -1.0;
+    kernel[3] = -1.0; kernel[4] = 8.0; kernel[5] = -1.0;
+    kernel[6] = -1.0; kernel[7] = -1.0; kernel[8] = -1.0;
+  }else if(isEdge3){
+    kernel[0] = 0.0; kernel[1] = 1.0; kernel[2] = 0.0;
+    kernel[3] = 1.0; kernel[4] = -4.0; kernel[5] = 1.0;
+    kernel[6] = 0.0; kernel[7] = 1.0; kernel[8] = 0.0;
+  }else if(isSharp){
+    kernel[0] = 0.0; kernel[1] = -1.0; kernel[2] = 0.0;
+    kernel[3] = -1.0; kernel[4] = 5.0; kernel[5] = -1.0;
+    kernel[6] = 0.0; kernel[7] = -1.0; kernel[8] = 0.0;
+  }else if(isBoxblur){
+    kernel[0] = 1.0/9.0; kernel[1] = 1.0/9.0; kernel[2] = 1.0/9.0;
+    kernel[3] = 1.0/9.0; kernel[4] = 1.0/9.0; kernel[5] = 1.0/9.0;
+    kernel[6] = 1.0/9.0; kernel[7] = 1.0/9.0; kernel[8] = 1.0/9.0;
+  }else {
+    kernel[0] = 0.0; kernel[1] = 0.0; kernel[2] = 0.0;
+    kernel[3] = 0.0; kernel[4] = 1.0; kernel[5] = 0.0;
+    kernel[6] = 0.0; kernel[7] = 0.0; kernel[8] = 0.0;
+  }
+  // kernel[0] = -2.0; kernel[1] = -1.0; kernel[2] = 0.0;
+  // kernel[3] = -1.0; kernel[4] = 1.0; kernel[5] = 1.0;
+  // kernel[6] = 0.0; kernel[7] = 1.0; kernel[8] = 2.0;
 
   // sharpen kernel
   // kernel[0] = -1.0; kernel[1] = 0.0; kernel[2] = -1.0;
@@ -73,6 +105,13 @@ void main(){
 	for(int i = 0; i<9; i++){
 		//sample a 3x3 grid of pixels
 		vec4 color = texture2D(tex0, uv + offset[i]*dist);
+    if(isEdge1 || isEdge2 || isEdge3) {
+      color.r = (color.r + color.g + color.g) / 3.0;
+      color.g = (color.r + color.g + color.g) / 3.0;
+      color.b = (color.r + color.g + color.g) / 3.0;
+      color.a = (color.r + color.g + color.g) / 3.0;
+    }
+
 
     // multiply the color by the kernel value and add it to our conv total
 		conv += color * kernel[i];
