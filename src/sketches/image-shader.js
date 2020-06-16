@@ -1,201 +1,230 @@
-const React = require("react")
+import { useStaticQuery, graphql } from "gatsby"
+import React from 'react'
+
 const Sketch = typeof window !== `undefined` ? require("react-p5") : null
 
-const ImageSketch = () => {
-  let cnv = null
-  let options = ` .\`-_':,;^=+/"|)\\<>)iv%xclrs{*}I?!][1taeo7zjLunT#JCwfy325Fp6mqSghVd4EgXPGZbYkOA&8U$@KHDBWNMR0Q`
-  let gui = null
-  let capture = null
-  let pg = null
-  let img = null
+const ImageShaderSketch = (props) => {
+  const data = useStaticQuery(graphql`
+    {
+      allFile(
+        filter: { sourceInstanceName: { eq: "shaders" }, name: { eq: "convolution" } }
+        sort: { fields: extension, order: DESC }
+      ) {
+        nodes {
+          publicURL
+        }
+      }
+    }
+  `)
 
-  let masks = {
-    identity: [
-      [0, 0, 0],
-      [0, 1, 0],
-      [0, 0, 0],
-    ],
-    edge: [
-      [-1, -1, -1],
-      [-1, 8, -1],
-      [-1, -1, -1],
-    ],
-    sharp: [
-      [0, -1, 0],
-      [-1, 5, -1],
-      [0, -1, 0],
-    ],
-    gaussianblur5x5: [
-      [1 / 256, 4 / 256, 6 / 256, 4 / 256, 1 / 256],
-      [4 / 256, 16 / 256, 24 / 256, 16 / 256, 4 / 256],
-      [6 / 256, 24 / 256, 36 / 256, 24 / 256, 6 / 256],
-      [4 / 256, 16 / 256, 24 / 256, 16 / 256, 4 / 256],
-      [1 / 256, 4 / 256, 6 / 256, 4 / 256, 1 / 256],
-    ],
-  }
+  const minW = 630
+  let w = minW,
+    h = 3 * w / 4
 
-  let kernel = masks.edge
-  let dest = null
+  let shader
+  let graphics
+  let video,img,img2,img3
+  let images = []
+  let imgIndex
 
-  const preload = p5 => {
-    img = p5.loadImage(
-      "https://4.bp.blogspot.com/-mLOwpEsNL4Y/UCu0wcVsPBI/AAAAAAAAA6s/7ECKTpxXr3o/s1600/lena.bmp"
+  let frames = true, imageMode = props.imageMode
+  let isEdge1 = false, isEdge2 = false, isEdge3 = false, isSharp = false, isBoxblur = false;
+
+  const preload = p => {
+    shader = p.loadShader(
+      data.allFile.nodes[0].publicURL,
+      data.allFile.nodes[1].publicURL
     )
+
+    img = p.loadImage("https://upload.wikimedia.org/wikipedia/commons/0/02/Fire_breathing_2_Luc_Viatour.jpg")
+    img2 = p.loadImage("https://4.bp.blogspot.com/-mLOwpEsNL4Y/UCu0wcVsPBI/AAAAAAAAA6s/7ECKTpxXr3o/s1600/lena.bmp")
+    img3 = p.loadImage("https://images.unsplash.com/photo-1500462918059-b1a0cb512f1d?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=2134&q=80")
+
+    images = [img,img2,img3]
+    imgIndex = 0
   }
 
-  const setup = (p5, canvasParentRef) => {
-    cnv = p5.createCanvas(img.width * 2, img.height).parent(canvasParentRef)
-    p5.pixelDensity(1)
-    dest = p5.createImage(img.width, img.height)
-    apply(p5)
-  }
-
-  const apply = p => {
-    dest.loadPixels()
-    img.loadPixels()
-    for (let x = 0; x < dest.width; x++) {
-      for (let y = 0; y < dest.height; y++) {
-        let result = convolution(p, img, x, y, kernel, kernel.length)
-        let index = (x + y * dest.width) * 4
-        dest.pixels[index + 0] = result[0]
-        dest.pixels[index + 1] = result[1]
-        dest.pixels[index + 2] = result[2]
-        dest.pixels[index + 3] = 255
-      }
-    }
-    dest.updatePixels()
-  }
-
-  const convolution = (p, img, x, y, kernel, ksize) => {
-    let accumulator = [0.0, 0.0, 0.0]
-    let offset = p.floor(ksize / 2)
-    for (let i = 0; i < ksize; i++) {
-      for (let j = 0; j < ksize; j++) {
-        let xpos = x + i - offset
-        let ypos = y + j - offset
-        let index = (xpos + img.width * ypos) * 4
-        index = p.constrain(index, 0, img.pixels.length - 1)
-
-        accumulator[0] += img.pixels[index + 0] * kernel[i][j]
-        accumulator[1] += img.pixels[index + 1] * kernel[i][j]
-        accumulator[2] += img.pixels[index + 2] * kernel[i][j]
-      }
-    }
-    return accumulator
-  }
-
-  const grayScale = p => {
-    dest.loadPixels()
-    img.loadPixels()
-    for (var y = 0; y < dest.height; y++) {
-      for (var x = 0; x < dest.width; x++) {
-        var index = (x + y * dest.width) * 4
-        var r = img.pixels[index + 0]
-        var g = img.pixels[index + 1]
-        var b = img.pixels[index + 2]
-        var a = img.pixels[index + 3]
-
-        var bw = (r + g + b) / 3
-
-        dest.pixels[index + 0] = bw
-        dest.pixels[index + 1] = bw
-        dest.pixels[index + 2] = bw
-      }
+  const setup = (p, canvasParentRef) => {
+    // Set canvas to viewport width
+    if(p.windowWidth < minW){
+      w = p.windowWidth - 40
+      h = 3 * (w/4)
     }
 
-    dest.updatePixels()
+    // Init Canvas
+    p.createCanvas(w, h*2).parent(canvasParentRef)
+
+    // Init Video
+    video = p.createCapture(p.VIDEO)
+    video.hide()
+    
+    // Init graphics 
+    graphics = p.createGraphics(w, h, p.WEBGL)
   }
 
-  const grayScaleLuma601 = p => {
-    dest.loadPixels()
-    img.loadPixels()
-    for (var y = 0; y < dest.height; y++) {
-      for (var x = 0; x < dest.width; x++) {
-        var index = (x + y * dest.width) * 4
-        var r = img.pixels[index + 0]
-        var g = img.pixels[index + 1]
-        var b = img.pixels[index + 2]
-        var a = img.pixels[index + 3]
+  const draw = p => {
+    // Shader setup
+    graphics.shader(shader)
 
-        var bw = r * 0.299 + g * 0.587 + b * 0.0114
+    // Uniforms setup
+    if (imageMode) shader.setUniform("tex0", img)
+    else shader.setUniform("tex0", video)
 
-        dest.pixels[index + 0] = bw
-        dest.pixels[index + 1] = bw
-        dest.pixels[index + 2] = bw
-      }
+    shader.setUniform("stepSize", [1/w, 1/h])
+    shader.setUniform('dist', 3.0);
+
+    shader.setUniform("isEdge1", isEdge1)
+    shader.setUniform("isEdge2", isEdge2)
+    shader.setUniform("isEdge3", isEdge3)
+    shader.setUniform("isSharp", isSharp)
+    shader.setUniform("isBoxblur", isBoxblur)
+    
+    // Add img/video to graphics and canvas
+    if (imageMode){
+      graphics.image(img, 0, 0)
+      p.image(img,0,h,w,h)
+    }else{
+      graphics.image(video, 0, 0)
+      p.image(video,0,h,w,h)
+    }
+    
+    // Flip video for proper visualization
+    graphics.translate(0,h)
+    p.scale(1.0,-1.0); 
+
+    // This is just a geometry needed to visualize the shader output
+    graphics.rect(0, 0, w, h)
+
+    // Show shader output on canvas
+    p.push()
+    p.scale(1.0,-1.0)
+    p.image(graphics, 0,1)
+    p.pop()
+
+    // Show frameRate/histogram
+    if (!imageMode && frames) {
+      p.push()
+      p.strokeWeight(2)
+      p.stroke(0)
+      p.fill("#22B455")
+      p.textSize(w/10)
+      p.scale(1.0,-1.0); 
+      p.text(Math.round(p.frameRate()),10,w/10)
+      p.pop()
+    } else histogram(p)
+  }
+
+  const histogram = (p) => {
+    var maxRange = 256
+    var histogram = []
+
+    p.push()
+    p.colorMode(p.HSL,255,255,255,255)
+
+    for (var i = 0; i < maxRange; i++) {
+      histogram[i] = 0;
     }
 
-    dest.updatePixels()
-  }
-
-  const grayScaleLuma709 = p => {
-    dest.loadPixels()
-    img.loadPixels()
-    for (var y = 0; y < dest.height; y++) {
-      for (var x = 0; x < dest.width; x++) {
-        var index = (x + y * dest.width) * 4
-        var r = img.pixels[index + 0]
-        var g = img.pixels[index + 1]
-        var b = img.pixels[index + 2]
-        var a = img.pixels[index + 3]
-
-        var bw = r * 0.2126 + g * 0.7152 + b * 0.0722
-
-        dest.pixels[index + 0] = bw
-        dest.pixels[index + 1] = bw
-        dest.pixels[index + 2] = bw
+    graphics.loadPixels()
+    for (var x = 0; x < graphics.width; x+=5) {
+      for (var y = 0; y < graphics.height; y+=5) {
+        var loc = (x + y * graphics.width) * 4;
+        histogram[graphics.pixels[loc + 2]]++
       }
     }
 
-    dest.updatePixels()
+    var maxPixels = Math.max(...histogram)
+    
+    p.push()
+    p.scale(1.0,-1.0)
+    p.noStroke()
+    p.fill(255,255,255,180)
+    p.rect(0,h,w,h)
+    for (i = 0; i < 255; i++) {
+      var height = p.map(histogram[i], 0, maxPixels, 0, h)
+      p.fill(255,255,i,200)
+      p.rect((i * (w / 256)) + 1, h*2, w / 256, -height)
+    }
+    p.pop()
+
+    p.pop()
+
+    // Histogram is intensive on pixels, run once and stop loop
+    p.noLoop()
   }
 
-  const draw = p5 => {
-    p5.image(img, 0, 0)
-    p5.image(dest, img.width + 1, 0)
-  }
-
-  const keyTyped = p5 => {
-    let key = p5.key
+  // Toggle color from image
+  const keyTyped = p => {
+    let key = p.key
 
     // identity
     if (key === "i") {
-      kernel = masks.identity
-      apply(p5)
-    }
-
-    // blur
-    if (key === "b") {
-      kernel = masks.gaussianblur5x5
-      apply(p5)
+      isEdge1 = isEdge2 = isEdge3 = isSharp = isBoxblur = false
     }
 
     // edge
     if (key === "e") {
-      kernel = masks.edge
-      apply(p5)
+      isEdge1 = true
+      isEdge2 = isEdge3 = isSharp = isBoxblur = false
+    }
+    if (key === 'r') {
+      isEdge2 = true
+      isEdge1 = isEdge3 = isSharp = isBoxblur = false
+    }
+    if (key === 't') {
+      isEdge3 = true
+      isEdge1 = isEdge2 = isSharp = isBoxblur = false
     }
 
     //sharp
     if (key === "s") {
-      kernel = masks.sharp
-      apply(p5)
+      isSharp = true
+      isEdge1 = isEdge2 = isEdge3 = isBoxblur = false
     }
 
-    if (key === "g") {
-      grayScale(p5)
+    // blur
+    // if (key === "b") {
+    //   kernel = masks.gaussianblur5x5
+    //   apply(p)
+    // }
+    if (key === 'v') {
+      isBoxblur = true
+      isEdge1 = isEdge2 = isEdge3 = isSharp = false
     }
-    if (key === "h") {
-      grayScaleLuma601(p5)
-    }
-    if (key === "j") {
-      grayScaleLuma709(p5)
+
+    if (key === "f") {
+      frames = !frames
     }
   }
 
-  return (
-    <Sketch preload={preload} setup={setup} draw={draw} keyTyped={keyTyped} />
-  )
+  const keyPressed = p => {
+    if (p.keyCode === p.LEFT_ARROW) {
+      if(imgIndex >= 1) {
+        imgIndex--
+        img = images[imgIndex]
+        p.redraw()
+      }
+    } 
+
+    if (p.keyCode === p.RIGHT_ARROW) {
+      if(imgIndex <= images.length-2) {
+        imgIndex++
+        img = images[imgIndex]
+        p.redraw()
+      }
+    } 
+
+    if (p.keyCode === p.BACKSPACE) {
+      if(imageMode) {
+        imageMode = false
+        p.loop()
+      } else {
+        imageMode = true
+      }
+    } 
+  }
+
+  return <Sketch preload={preload} setup={setup} draw={draw} keyTyped={keyTyped} keyPressed={keyPressed}/>
 }
 
-export default ImageSketch
+export default ImageShaderSketch

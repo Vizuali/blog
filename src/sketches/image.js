@@ -45,7 +45,6 @@ const ImageSketch = () => {
 
   let kernel = masks.edge
   let img,dest
-  let graphics
 
   const w = 630, h = 3 * w / 4
 
@@ -58,7 +57,6 @@ const ImageSketch = () => {
   const setup = (p, canvasParentRef) => {
     p.createCanvas(w, h * 2).parent(canvasParentRef)
     dest = p.createImage(img.width, img.height)
-    graphics = p.createGraphics(w, h)
     apply(p)
   }
 
@@ -98,7 +96,7 @@ const ImageSketch = () => {
 
   const histogram = (p) => {
     var maxRange = 256
-    var histogram = [];
+    var histogram = []
 
     p.push()
     p.colorMode(p.HSL,255,255,255,255)
@@ -118,12 +116,14 @@ const ImageSketch = () => {
     var maxPixels = Math.max(...histogram)
     
     p.push()
-    p.scale(1.0,-1.0)
+    // p.scale(1.0,-1.0)
     p.noStroke()
+    p.fill(255,255,255,180)
+    p.rect(0,h,w,h)
     for (i = 0; i < 255; i++) {
       var height = p.map(histogram[i], 0, maxPixels, 0, h)
-      p.fill(255,0,i,200)
-      p.rect((i * (w / 255)), h*2, w / 256, -height)
+      p.fill(255,255,i,200)
+      p.rect((i * (w / 256)) + 1, h*2, w / 256, -height)
     }
     p.pop()
 
@@ -132,7 +132,6 @@ const ImageSketch = () => {
     // Histogram is intensive on pixels, run once and stop loop
     p.noLoop()
   }
-
   const grayScale = () => {
     dest.loadPixels()
     img.loadPixels()
@@ -200,8 +199,8 @@ const ImageSketch = () => {
   }
 
   const draw = p => {
-    p.image(img, 0, 0,w,h)
-    p.image(dest, 0, h,w,h)
+    p.image(dest, 0, 0,w,h)
+    p.image(img, 0, h,w,h)
     histogram(p)
   }
 
@@ -212,36 +211,43 @@ const ImageSketch = () => {
     if (key === "i") {
       kernel = masks.identity
       apply(p)
+      p.loop()
     }
 
     // blur
     if (key === "b") {
       kernel = masks.gaussianblur5x5
       apply(p)
+      p.loop()
     }
     if (key === 'v') {
       kernel = masks.boxblur
       apply(p)
+      p.loop()
     }
 
     // edge
     if (key === "e") {
       kernel = masks.edge
       apply(p)
+      p.loop()
     }
     if (key === 'r') {
       kernel = masks.edge1
       apply(p)
+      p.loop()
     }
     if (key === 't') {
       kernel = masks.edge2
       apply(p)
+      p.loop()
     }
 
     //sharp
     if (key === "s") {
       kernel = masks.sharp
       apply(p)
+      p.loop()
     }
 
     if (key === "g") {
