@@ -27,7 +27,7 @@ const ImageShaderSketch = (props) => {
   let images = []
   let imgIndex
 
-  let frames = true, imageMode = props.imageMode
+  let imageMode = props.imageMode
   let isEdge1 = false, isEdge2 = false, isEdge3 = false, isSharp = false, isBoxblur = false;
 
   const preload = p => {
@@ -102,7 +102,7 @@ const ImageShaderSketch = (props) => {
     p.pop()
 
     // Show frameRate/histogram
-    if (!imageMode && frames) {
+    if (!imageMode) {
       p.push()
       p.strokeWeight(2)
       p.stroke(0)
@@ -190,10 +190,6 @@ const ImageShaderSketch = (props) => {
     if (key === 'v') {
       isBoxblur = true
       isEdge1 = isEdge2 = isEdge3 = isSharp = false
-    }
-
-    if (key === "f") {
-      frames = !frames
     }
   }
 

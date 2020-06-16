@@ -105,13 +105,6 @@ void main(){
 	for(int i = 0; i<9; i++){
 		//sample a 3x3 grid of pixels
 		vec4 color = texture2D(tex0, uv + offset[i]*dist);
-    if(isEdge1 || isEdge2 || isEdge3) {
-      color.r = (color.r + color.g + color.g) / 3.0;
-      color.g = (color.r + color.g + color.g) / 3.0;
-      color.b = (color.r + color.g + color.g) / 3.0;
-      color.a = (color.r + color.g + color.g) / 3.0;
-    }
-
 
     // multiply the color by the kernel value and add it to our conv total
 		conv += color * kernel[i];
@@ -122,6 +115,12 @@ void main(){
 
   // normalize the convolution by dividing by the kernel weight
   conv.rgb /= kernelWeight;
+
+  // Use black and white based on luma value
+  if (isEdge1 || isEdge2 || isEdge3) {
+    float gray = dot(conv.rgb, vec3(0.299, 0.587, 0.114));
+    conv.rgb = vec3(step(conv.r, gray), step(conv.g, gray),step(conv.b, gray) );
+  }
 		
 	gl_FragColor = vec4(conv.rgb, 1.0);
 }
