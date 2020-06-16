@@ -3,16 +3,26 @@ import React from 'react'
 const Sketch = typeof window !== `undefined` ? require("react-p5") : null
 
 const ImageSketch = () => {
-  let masks = {
+  const masks = {
     identity: [
       [0, 0, 0],
       [0, 1, 0],
       [0, 0, 0],
     ],
     edge: [
+      [-1, 0, 1],
+      [0, 0, 0],
+      [1, 0, -1],
+    ],
+    edge1: [
       [-1, -1, -1],
       [-1, 8, -1],
       [-1, -1, -1],
+    ],
+    edge2: [
+      [0, 1, 0],
+      [1, -4, 1],
+      [0, 1, 0],
     ],
     sharp: [
       [0, -1, 0],
@@ -26,10 +36,18 @@ const ImageSketch = () => {
       [4 / 256, 16 / 256, 24 / 256, 16 / 256, 4 / 256],
       [1 / 256, 4 / 256, 6 / 256, 4 / 256, 1 / 256],
     ],
+    boxblur: [
+      [1 / 9, 1 / 9, 1 / 9],
+      [1 / 9, 1 / 9, 1 / 9],
+      [1 / 9, 1 / 9, 1 / 9],
+    ]
   }
 
   let kernel = masks.edge
   let img,dest
+  let graphics
+
+  const w = 630, h = 3 * w / 4
 
   const preload = p => {
     img = p.loadImage(
@@ -38,10 +56,9 @@ const ImageSketch = () => {
   }
 
   const setup = (p, canvasParentRef) => {
-    p.createCanvas(img.width * 2, img.height, p.WEBGL).parent(canvasParentRef)
-    console.log(p.drawingContext)
-    p.pixelDensity(1)
+    p.createCanvas(w, h * 2).parent(canvasParentRef)
     dest = p.createImage(img.width, img.height)
+    graphics = p.createGraphics(w, h)
     apply(p)
   }
 
@@ -79,7 +96,44 @@ const ImageSketch = () => {
     return accumulator
   }
 
-  const grayScale = p => {
+  const histogram = (p) => {
+    var maxRange = 256
+    var histogram = [];
+
+    p.push()
+    p.colorMode(p.HSL,255,255,255,255)
+
+    for (var i = 0; i < maxRange; i++) {
+      histogram[i] = 0;
+    }
+
+    dest.loadPixels()
+    for (var x = 0; x < dest.width; x+=5) {
+      for (var y = 0; y < dest.height; y+=5) {
+        var loc = (x + y * dest.width) * 4;
+        histogram[dest.pixels[loc + 2]]++
+      }
+    }
+
+    var maxPixels = Math.max(...histogram)
+    
+    p.push()
+    p.scale(1.0,-1.0)
+    p.noStroke()
+    for (i = 0; i < 255; i++) {
+      var height = p.map(histogram[i], 0, maxPixels, 0, h)
+      p.fill(255,0,i,200)
+      p.rect((i * (w / 255)), h*2, w / 256, -height)
+    }
+    p.pop()
+
+    p.pop()
+
+    // Histogram is intensive on pixels, run once and stop loop
+    p.noLoop()
+  }
+
+  const grayScale = () => {
     dest.loadPixels()
     img.loadPixels()
     for (var y = 0; y < dest.height; y++) {
@@ -101,7 +155,7 @@ const ImageSketch = () => {
     dest.updatePixels()
   }
 
-  const grayScaleLuma601 = p => {
+  const grayScaleLuma601 = () => {
     dest.loadPixels()
     img.loadPixels()
     for (var y = 0; y < dest.height; y++) {
@@ -123,7 +177,7 @@ const ImageSketch = () => {
     dest.updatePixels()
   }
 
-  const grayScaleLuma709 = p => {
+  const grayScaleLuma709 = () => {
     dest.loadPixels()
     img.loadPixels()
     for (var y = 0; y < dest.height; y++) {
@@ -146,8 +200,9 @@ const ImageSketch = () => {
   }
 
   const draw = p => {
-    p.image(img, 0, 0)
-    p.image(dest, img.width + 1, 0)
+    p.image(img, 0, 0,w,h)
+    p.image(dest, 0, h,w,h)
+    histogram(p)
   }
 
   const keyTyped = p => {
@@ -164,10 +219,22 @@ const ImageSketch = () => {
       kernel = masks.gaussianblur5x5
       apply(p)
     }
+    if (key === 'v') {
+      kernel = masks.boxblur
+      apply(p)
+    }
 
     // edge
     if (key === "e") {
       kernel = masks.edge
+      apply(p)
+    }
+    if (key === 'r') {
+      kernel = masks.edge1
+      apply(p)
+    }
+    if (key === 't') {
+      kernel = masks.edge2
       apply(p)
     }
 
@@ -178,13 +245,13 @@ const ImageSketch = () => {
     }
 
     if (key === "g") {
-      grayScale(p)
+      grayScale()
     }
     if (key === "h") {
-      grayScaleLuma601(p)
+      grayScaleLuma601()
     }
     if (key === "j") {
-      grayScaleLuma709(p)
+      grayScaleLuma709()
     }
   }
 

@@ -11,7 +11,7 @@ uniform sampler2D iChannel0;
 uniform bool iMouse;
 uniform bool monotone;
 
-out vec4 myOutputColor;
+out vec4 outputColor;
 
 float character(int n, vec2 p){
   // The point is considered by every 4 pixels
@@ -65,23 +65,11 @@ void main(){
 	vec2 p = mod(pix / 4.0, 2.0) - vec2(1.0);
 
   // If a color-agnostic representation is desired
-  if (monotone) {
-    // int n =  11512810;           // .
-    // if (gray > 0.2) n = 13199452;// :
-    // if (gray > 0.3) n = 15252014;// *
-    // if (gray > 0.4) n = 23385164;// o 
-    // if (gray > 0.5) n = 15255086;// &
-    // if (gray > 0.6) n = 332772;  // 8
-    // if (gray > 0.7) n = 65600;   // @
-    // if (gray > 0.8) n = 4096;    // #
-
-    col = vec3(1.0,1.0,1.0)*character(n, -p);
-	} else{
-    // Adds color if wanted
-    if (iMouse)	col = gray * vec3(character(n, p));
-    else col = col*character(n, -p);
-  }
+  
+  if (iMouse) col = gray * vec3(character(n, p));
+  else if(monotone) col = vec3(1.0,1.0,1.0)*character(n, -p);
+  else col = col*character(n, -p);
 
   // Return fragment
-	myOutputColor = vec4(col, 1.0);
+	outputColor = vec4(col, 1.0);
 }

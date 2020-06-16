@@ -6,8 +6,8 @@ module.exports = {
       name: `Vizuali`,
       summary: `- just a group of people.`,
     },
-    description: `A starter blog demonstrating what Gatsby can do.`,
-    siteUrl: `https://github.com/vizuali`,
+    description: `A starter blog demonstrating what can be done with p5js`,
+    siteUrl: `https://github.com/vizuali/index`,
     social: {
       github: `vizuali`,
     },
@@ -65,12 +65,6 @@ module.exports = {
     },
     `gatsby-transformer-sharp`,
     `gatsby-plugin-sharp`,
-    {
-      resolve: `gatsby-plugin-google-analytics`,
-      options: {
-        //trackingId: `ADD YOUR TRACKING ID HERE`,
-      },
-    },
     {
       resolve: `gatsby-plugin-manifest`,
       options: {
