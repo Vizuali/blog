@@ -32,7 +32,7 @@ const AsciiShaderSketch = (props) => {
   const preload = p => {
     shader = p.loadShader(
       data.allFile.nodes[0].publicURL,
-      data.allFile.nodes[2].publicURL
+      data.allFile.nodes[1].publicURL
     )
 
     img = p.loadImage("https://upload.wikimedia.org/wikipedia/commons/0/02/Fire_breathing_2_Luc_Viatour.jpg")
