@@ -31,10 +31,14 @@ const ImageShaderSketch = (props) => {
   let isEdge1 = false, isEdge2 = false, isEdge3 = false, isSharp = false, isBoxblur = false;
 
   const preload = p => {
-    shader = p.loadShader(
-      data.allFile.nodes[0].publicURL,
-      data.allFile.nodes[1].publicURL
-    )
+    try {
+      shader = p.loadShader(
+        data.allFile.nodes[0].publicURL,
+        data.allFile.nodes[1].publicURL
+      )
+    } catch(e){
+      shader = p.loadShader("https://raw.githubusercontent.com/Vizuali/index/master/src/shaders/convolution.vert","https://raw.githubusercontent.com/Vizuali/index/master/src/shaders/convolution.frag")
+    }
 
     img = p.loadImage("https://upload.wikimedia.org/wikipedia/commons/0/02/Fire_breathing_2_Luc_Viatour.jpg")
     img2 = p.loadImage("https://4.bp.blogspot.com/-mLOwpEsNL4Y/UCu0wcVsPBI/AAAAAAAAA6s/7ECKTpxXr3o/s1600/lena.bmp")
