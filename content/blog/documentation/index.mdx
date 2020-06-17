@@ -9,10 +9,52 @@ import ImageSketch from "../../../src/sketches/image"
 
 ## Motivation
 
+Almost all the explanations in the course where given in processing, so we wanted to implement the image procesisng workshop in a web blog in Gatsby using p5.js.
 ## Objective
 
-To implement the 
+To implement the different image processing techniques like convolution masks, grayscale, ascii, etc, with a software and hardware approach.
 ## Methodology
+
+### Ascii
+ 
+### Grayscale
+ 
+### Convolution masks
+__Edge detection__
+
+We implemented 3 different masks for edge detection. This methods are applied using kernel convolution:
+
+- The first method uses the following matrix:
+
+![alt text](https://wikimedia.org/api/rest_v1/media/math/render/svg/1fbc763a0af339e3a3ff20af60a8a993c53086a7 "Edge 1")
+
+- The second method uses the following matrix:
+
+![alt text](https://wikimedia.org/api/rest_v1/media/math/render/svg/1445b36fef5ec4ca0e0b5d7e200c90afaf6af58b "Edge 2")
+
+- The third method uses the following matrix:
+
+![alt text](https://wikimedia.org/api/rest_v1/media/math/render/svg/f800ad5f76b6c26c729ff0c1fef44284d7cade7a "Edge 3")
+__Greyscale:__ 
+
+We implemented 5 different masks for greyscale:
+
+- The first method consists in calculate the average rgb of each pixel an set those (rgb) to the calculated average.
+- The second method is Luma 601 which uses this function in the average calculation:
+
+![alt text](https://wikimedia.org/api/rest_v1/media/math/render/svg/7abe41a6e7496f32b50c658ff646cc51e8495366 "Luma 601")
+- The third method is Luma 709 which uses this function in the average calculation:
+
+![alt text](https://wikimedia.org/api/rest_v1/media/math/render/svg/e26a409021fcb5ae8429adc475a7f426f83e7f7a "Luma 709")
+
+- The fourth method is Luma 240 which uses this function in the average calculation:
+
+![alt text](https://wikimedia.org/api/rest_v1/media/math/render/svg/2714d2c89f12a32700f6cf88e318d887a85b9e20 "Luma 240")
+
+- The fifth method is Luma 2020 which uses this function in the average calculation:
+
+![alt text](https://wikimedia.org/api/rest_v1/media/math/render/svg/2714d2c89f12a32700f6cf88e318d887a85b9e20 "Luma 240")
+
 
 ## Results
 
