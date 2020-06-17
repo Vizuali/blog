@@ -1,0 +1,113 @@
+---
+title: "Documentation"
+date: "2020-06-16T16:00:00.0000"
+description: "Documentation of the project."
+---
+This page contains the documentation of the image processing workshop.
+
+import ImageSketch from "../../../src/sketches/image"
+
+## Motivation
+
+Almost all the explanations in the course where given in processing, so we wanted to implement the image procesisng workshop in a web blog in Gatsby using p5.js.
+## Objective
+
+To implement the different image processing techniques like convolution masks, grayscale, ascii, etc, with a software and hardware approach.
+## Methodology
+
+### Ascii
+
+We calculate the brightness of each pixel and assign a similar character to the pixel. 
+ 
+### Grayscale
+
+We implemented 5 different masks for greyscale:
+
+- The first method consists in calculate the average rgb of each pixel an set those (rgb) to the calculated average.
+- The second method is Luma 601 which uses this function in the average calculation:
+
+![alt text](https://wikimedia.org/api/rest_v1/media/math/render/svg/7abe41a6e7496f32b50c658ff646cc51e8495366 "Luma 601")
+- The third method is Luma 709 which uses this function in the average calculation:
+
+![alt text](https://wikimedia.org/api/rest_v1/media/math/render/svg/e26a409021fcb5ae8429adc475a7f426f83e7f7a "Luma 709")
+
+- The fourth method is Luma 240 which uses this function in the average calculation:
+
+![alt text](https://wikimedia.org/api/rest_v1/media/math/render/svg/2714d2c89f12a32700f6cf88e318d887a85b9e20 "Luma 240")
+
+- The fifth method is Luma 2020 which uses this function in the average calculation:
+
+![alt text](https://i.ibb.co/k12MHyT/Code-Cogs-Eqn.png "Luma 2020")
+
+ 
+### Convolution masks
+
+__Identity__
+
+As the name says, the identity matrix is used for this mask:
+
+![alt text](https://wikimedia.org/api/rest_v1/media/math/render/svg/1fbc763a0af339e3a3ff20af60a8a993c53086a7 "Edge 1")
+
+__Edge detection__
+
+We implemented 3 different masks for edge detection. This methods are applied using kernel convolution:
+
+- The first method uses the following matrix:
+
+![alt text](https://wikimedia.org/api/rest_v1/media/math/render/svg/99a928198c80a46e8c3da70714400f77f6747801 "Edge 1")
+
+- The second method uses the following matrix:
+
+![alt text](https://wikimedia.org/api/rest_v1/media/math/render/svg/1445b36fef5ec4ca0e0b5d7e200c90afaf6af58b "Edge 2")
+
+- The third method uses the following matrix:
+
+![alt text](https://wikimedia.org/api/rest_v1/media/math/render/svg/f800ad5f76b6c26c729ff0c1fef44284d7cade7a "Edge 3")
+
+__Blur effect__
+
+For the blur effect, we use two methods:
+
+- The box blur:
+
+![alt text](https://wikimedia.org/api/rest_v1/media/math/render/svg/91256bfeece3344f8602e288d445e6422c8b8a1c "Boxblur")
+
+- Gaussian blur 5x5:
+
+![alt text](https://wikimedia.org/api/rest_v1/media/math/render/svg/f91401a3e97428f14862afa1c781c55f4157580b "Gaussian blur 5x5")
+
+__Sharpen effect__
+
+The following matrix is used:
+
+![alt text](https://wikimedia.org/api/rest_v1/media/math/render/svg/beb8b9a493e8b9cf5deccd61bd845a59ea2e62cc "Sharpen")
+
+
+
+## Results
+
+__Ascii__
+
+We got a very fluent live video, the fps rate depends on the hardware of the user, so in low end devices the framerate can be lower.
+The lag on the video is mostly because of the camera used.
+
+__Convolution Maks__
+
+The sharpen and edge detection masks work very fast, as we can see in the video processing entry. However, the Blur mask work slower
+on images but fast on video processing. This maybe has something to do with the hardware or the Web Browser. The gray effects were fast
+on both, image and video, very fast. 
+It goes without saying that the results of the convolution maks were as expected. Actually, we had implementations of the maks in processing
+beforehand so the work was focused in the implementation of shaders in p5js. There were problems with the version of WEBGL
+but were solved.
+
+
+## Conclusion
+
+After working on p5js in a web blog, we determined that is powerful as processing when it comes to convolution masks. The capability
+of run the convolutions in a easy way in Javascript is perfect for newlearners. 
+
+## References
+
+- [The sketch running in this entry](https://idmnyu.github.io/p5.js-image/Filters/index.html#bw)
+- [Example from Ben Fry](https://github.com/processing/processing-video/blob/master/examples/Capture/AsciiVideo/AsciiVideo.pde)
+- [Example from Processing Forum](https://forum.processing.org/two/discussion/6830/interpret-image-as-ascii-text)
