@@ -40,7 +40,11 @@ const AsciiSketch = () => {
   let gray = false, monotone = false, frames = true, imageMode = false
 
   const preload = p => {
-    font = p.loadFont(data.allFile.nodes[0].publicURL)
+    try {
+      font = p.loadFont(data.allFile.nodes[0].publicURL)
+    } catch(e) {
+      font = p.loadFont("https://github.com/Vizuali/index/blob/master/content/assets/UniversLTStd-Light.otf")
+    }
 
     img = p.loadImage("https://upload.wikimedia.org/wikipedia/commons/0/02/Fire_breathing_2_Luc_Viatour.jpg")
     img2 = p.loadImage("https://4.bp.blogspot.com/-mLOwpEsNL4Y/UCu0wcVsPBI/AAAAAAAAA6s/7ECKTpxXr3o/s1600/lena.bmp")
@@ -122,7 +126,8 @@ const AsciiSketch = () => {
         else if(monotone) p.fill(255)
         else p.fill(r,g,b)
 
-        p.text(letters[brightness], x, y)
+        // resizing for small devices
+        p.text(letters[brightness], x * w / input.width, y * h / input.height)
       }
     }
   }

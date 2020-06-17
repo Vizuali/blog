@@ -16,14 +16,13 @@ const GraySketch = () => {
   const luma709 = arr => 0.2126 * arr[0] + 0.7152 * arr[1] + 0.0722 * arr[2]
   const luma2020 = arr => 0.2627 * arr[0] + 0.6780 * arr[1] + 0.0593 * arr[2]
 
-
-  let dest,video,img,img2,img3
+  let img,video,imgDest,videoDest,img2,img3
   let images = []
   let imgIndex
-  let grayFunction = arr => 0.2989 * arr[0] + 0.5870 * arr[1] + 0.1140 * arr[2]
-  let grayIndex = 0
-  let grays = []
-  let frames = true, imageMode = true
+  let grayIndex = 4
+  let grays = [rgbAvg,rgbMax,rgbMid,luma601,luma240,luma709,luma2020]
+  let names = ["RGB: Average","RGB: Max","RGB: Mid","Luma: 601","Luma: 240","Luma: 709","Luma: 2020"]
+  let imageMode = true
 
   const preload = p => {
     img = p.loadImage("https://upload.wikimedia.org/wikipedia/commons/0/02/Fire_breathing_2_Luc_Viatour.jpg")
@@ -32,9 +31,6 @@ const GraySketch = () => {
 
     images = [img,img2,img3]
     imgIndex = 0
-
-    grayFunction = luma601
-    grays = [rgbAvg,rgbMax,rgbMid,luma601,luma240,luma709,luma2020]
   }
 
   const setup = (p, canvasParentRef) => {
@@ -50,36 +46,64 @@ const GraySketch = () => {
     // Init Canvas
     p.createCanvas(w, h*2).parent(canvasParentRef)
 
-    // Init Output image
-    dest = p.createImage(img.width,img.height)
-
     // Init Video
-    video = p.createCapture(p.VIDEO)
+    video = p.createCapture({
+      video:{
+        mandatory:{
+          maxWidth : w,
+          maxHeight: h
+        }
+      },
+      audio:false
+    })
     video.hide()
 
-    // Init graphics 
-    // graphics = p.createGraphics(w, h)
+    // Init Output images
+    imgDest = p.createImage(img.width,img.height)
+    videoDest = p.createImage(video.width,video.height)
+    
+    initImage(imgDest)
+    initImage(videoDest)
+  }
 
+  const initImage = input => {
+    input.loadPixels()
+    for (let x = 0; x < input.width; x++) {
+      for (let y = 0; y < input.height; y++) {
+        let i = (x + y * input.width) * 4
+        input.pixels[i] = input.pixels[i+1] = input.pixels[i+2] = input.pixels[i+3] = 255 
+      }
+    }
+    input.updatePixels()
   }
 
   const draw = p => {
-    // Set background to black
-    p.background(0)
-
     // Add img/video to graphics and canvas
+    // Then calculate gray pixels
+    // And display output image
     if (imageMode){
-      // graphics.image(img,0,0)
       p.image(img,0,h,w,h)
+      gray(img,imgDest)
+      p.image(imgDest,0,0,w,h)
+
     }else{
-      // graphics.image(video,0,0)
-      p.image(video,0,h,w,h)
+      p.image(videoDest,0,h,w,h)
+      gray(video,videoDest)
+      p.image(video,0,0,w,h)
     }
 
-    if(imageMode) gray(p,img,grayFunction)
-    else gray(p,video,grayFunction)
-
+    // Show current function
+    p.push()
+    p.textSize(50)
+    p.fill(255)
+    p.stroke(0)
+    p.strokeWeight(2)
+    p.textAlign(p.CENTER)
+    p.text(names[grayIndex],w/2,h/10)
+    p.pop()
+    
     // Show frameRate/histogram
-    if (!imageMode && frames) {
+    if (!imageMode) {
       p.push()
       p.strokeWeight(2)
       p.stroke(0)
@@ -88,30 +112,34 @@ const GraySketch = () => {
       p.text(p.round(p.frameRate()),w/25,h/8)
       p.pop()
     } else histogram(p)
+  } 
 
-    p.image(img,0,0,w,h)
-  }
-
-  const gray = (p,input,f) => {
+  const gray = (input, output) => {
     input.loadPixels()
-    dest.loadPixels()
-    p.push()
-    // p.colorMode(p.RGB,1.0)
-    for (let y = 0; y < input.height; y += 5) {
-      for (let x = 0; x < input.width; x += 5) {
-        var loc = (x + y * input.width) * 4;
+    output.loadPixels()
+    for (let x = 0; x < input.width; x++) {
+      for (let y = 0; y < input.height; y++) {
+        let i = (x + y * input.width) * 4
+        const r = input.pixels[i]
+        const g = input.pixels[i+1]
+        const b = input.pixels[i+2]
 
-        let r = input.pixels[loc+0]
-        let g = input.pixels[loc+1]
-        let b = input.pixels[loc+2]
+        let gray = grays[grayIndex]([r,g,b])
 
-        let value = f([r,g,b])
-
-        dest.set(x, y, p.color(value));
+        if(imageMode){
+          output.pixels[i] = output.pixels[i+1] = output.pixels[i+2] = gray
+          // output.pixels[i+3] = 255
+        }else{
+          input.pixels[i] = input.pixels[i+1] = input.pixels[i+2] = gray 
+          output.pixels[(x+y*output.width)*4 ] = r
+          output.pixels[(x+y*output.width)*4 + 1] = g
+          output.pixels[(x+y*output.width)*4 + 2] = b
+        }
       }
     }
-    p.pop()
-
+    if(!imageMode) input.updatePixels()
+    output.updatePixels()
+    output.resize(w,h)
   }
 
   const histogram = (p) => {
@@ -125,11 +153,11 @@ const GraySketch = () => {
       histogram[i] = 0;
     }
 
-    img.loadPixels()
-    for (var x = 0; x < img.width; x+=5) {
-      for (var y = 0; y < img.height; y+=5) {
-        var loc = (x + y * img.width) * 4;
-        histogram[img.pixels[loc + 2]]++
+    imgDest.loadPixels()
+    for (var x = 0; x < imgDest.width; x+=5) {
+      for (var y = 0; y < imgDest.height; y+=5) {
+        var loc = (x + y * imgDest.width) * 4;
+        histogram[imgDest.pixels[loc + 2]]++
       }
     }
 
@@ -158,7 +186,6 @@ const GraySketch = () => {
     if (key === "g") {
       if(grayIndex >= 1) {
         grayIndex--
-        grayFunction = grays[grayIndex]
         p.redraw()
       }
     } 
@@ -166,14 +193,9 @@ const GraySketch = () => {
     if (key === "G") {
       if(grayIndex <= grays.length-2) {
         grayIndex++
-        grayFunction = grays[grayIndex]
         p.redraw()
       }
     } 
-
-    if (key === "f") {
-      frames = !frames
-    }
   }
 
   const keyPressed = p => {

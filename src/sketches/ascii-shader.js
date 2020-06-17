@@ -30,10 +30,14 @@ const AsciiShaderSketch = (props) => {
   let gray = false, monotone = false, frames = true, imageMode = props.imageMode
 
   const preload = p => {
-    shader = p.loadShader(
-      data.allFile.nodes[0].publicURL,
-      data.allFile.nodes[1].publicURL
-    )
+    try{
+      shader = p.loadShader(
+        data.allFile.nodes[0].publicURL,
+        data.allFile.nodes[1].publicURL
+      )
+    } catch(e){
+      shader = p.loadShader("https://raw.githubusercontent.com/Vizuali/index/master/src/shaders/ascii.vert","https://raw.githubusercontent.com/Vizuali/index/master/src/shaders/ascii.frag")
+    }
 
     img = p.loadImage("https://upload.wikimedia.org/wikipedia/commons/0/02/Fire_breathing_2_Luc_Viatour.jpg")
     img2 = p.loadImage("https://4.bp.blogspot.com/-mLOwpEsNL4Y/UCu0wcVsPBI/AAAAAAAAA6s/7ECKTpxXr3o/s1600/lena.bmp")
@@ -47,7 +51,7 @@ const AsciiShaderSketch = (props) => {
     // Set canvas to viewport width
     if(p.windowWidth < minW){
       w = p.windowWidth - 40
-      h = 3 * (w/4)
+      h = 3 * (p.windowWidth/4)
     }
 
     // Init Canvas
@@ -66,7 +70,8 @@ const AsciiShaderSketch = (props) => {
     graphics.shader(shader)
 
     // Uniforms setup
-    shader.setUniform("iResolution", [w, h]);
+    // This line is for maintain good aspect ratio on small devices
+    shader.setUniform("iResolution", [w < minW ? w*4 : w, w < minW ? h*4 : h]);
     if (imageMode) shader.setUniform("iChannel0", img);
     else shader.setUniform("iChannel0", video);
     shader.setUniform("iMouse", gray);
@@ -84,11 +89,11 @@ const AsciiShaderSketch = (props) => {
     if(gray || monotone) p.filter(p.GRAY);
 
     // Flip video for proper visualization
-    graphics.translate(0,h)
+    // graphics.translate(0,h)
     p.scale(1.0,-1.0); 
 
     // This is just a geometry needed to visualize the shader output
-    graphics.rect(0, 0, w, h)
+    graphics.rect(0,0,0,0)
 
     // Show shader output on canvas
     p.image(graphics, 0,-h)
@@ -191,7 +196,7 @@ const AsciiShaderSketch = (props) => {
     } 
   }
 
-  return <Sketch preload={preload} setup={setup} draw={draw} keyTyped={keyTyped} keyPressed={keyPressed}/>
+  return <Sketch preload={preload} setup={setup} draw={draw} keyTyped={keyTyped} keyPressed={keyPressed} />
 }
 
 export default AsciiShaderSketch
